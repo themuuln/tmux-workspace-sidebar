@@ -1,0 +1,822 @@
+#!/usr/bin/env python3
+
+import curses
+import os
+import signal
+import sys
+import time
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
+from tmux_workspace_sidebar.state import (  # noqa: E402
+    clear_actionable_state_file,
+    load_pane_states as load_shared_pane_states,
+    load_selection_key as load_shared_selection_key,
+    state_dir as resolve_state_dir,
+    update_selection_key as update_shared_selection_key,
+)
+from tmux_workspace_sidebar.navigation import (  # noqa: E402
+    flatten_window_targets,
+)
+from tmux_workspace_sidebar.sidebar_actions import SidebarActionService  # noqa: E402
+from tmux_workspace_sidebar.sidebar_tree import (  # noqa: E402
+    Pane,
+    Row,
+    Session,
+    Window,
+    build_rows as build_sidebar_rows,
+    ensure_selected_key_visible as ensure_sidebar_selected_key_visible,
+    filtered_rows as filter_sidebar_rows,
+    matching_row_indexes as find_matching_row_indexes,
+    merge_snapshot_state,
+    reconcile_expansion_state as reconcile_sidebar_expansion_state,
+)
+from tmux_workspace_sidebar.sidebar_input import (  # noqa: E402
+    handle_input_key as sidebar_handle_input_key,
+    handle_key as sidebar_handle_key,
+    reset_input as sidebar_reset_input,
+    start_input as sidebar_start_input,
+    start_rename as sidebar_start_rename,
+    submit_input as sidebar_submit_input,
+)
+from tmux_workspace_sidebar.sidebar_render import (  # noqa: E402
+    draw as draw_sidebar,
+    footer_prefix as render_footer_prefix,
+    footer_text as render_footer_text,
+    indicator_attr as render_indicator_attr,
+    row_attr as render_row_attr,
+    row_indicator as render_row_indicator,
+    safe_addstr as render_safe_addstr,
+    status_attr as render_status_attr,
+)
+from tmux_workspace_sidebar.tmux import default_client  # noqa: E402
+
+
+FALLBACK_REFRESH_SECONDS = 5.0
+INPUT_POLL_TIMEOUT_MS = 50
+ESCAPE_SEQUENCE_TIMEOUT_MS = 25
+STATUS_ICONS = {
+    "idle": "○",
+    "needs-input": "?",
+    "done": "✓",
+    "error": "✕",
+}
+STATUS_LABELS = {
+    "idle": "Ready",
+    "running": "Working",
+    "needs-input": "Needs input",
+    "done": "Done",
+    "error": "Error",
+}
+RUNNING_SPINNER_FRAMES = ("◐", "◓", "◑", "◒")
+KEY_SHIFT_LEFT = getattr(curses, "KEY_SLEFT", 0x200001)
+KEY_SHIFT_RIGHT = getattr(curses, "KEY_SRIGHT", 0x200002)
+ESCAPE_KEY_TRANSLATIONS = {
+    "\x1b[1;2A": curses.KEY_UP,
+    "\x1b[1;2B": curses.KEY_DOWN,
+    "\x1b[1;2C": KEY_SHIFT_RIGHT,
+    "\x1b[1;2D": KEY_SHIFT_LEFT,
+    "\x1b[Z": curses.KEY_BTAB,
+}
+
+TMUX = default_client()
+tmux_capture = TMUX.capture
+tmux_run = TMUX.run
+tmux_run_multi = TMUX.run_multi
+tmux_option = TMUX.option
+non_sidebar_pane = TMUX.non_sidebar_pane
+clear_sidebar_focus_everywhere = TMUX.clear_sidebar_focus_everywhere
+
+
+def status_badge(status: str, unread: bool = False) -> str:
+    if status != "running":
+        if status == "done":
+            return "✓" if unread else "○"
+        return STATUS_ICONS.get(status, "")
+
+    frame = int(time.monotonic() * 8) % len(RUNNING_SPINNER_FRAMES)
+    return RUNNING_SPINNER_FRAMES[frame]
+
+
+def decode_escape_sequence(sequence: str) -> Optional[int]:
+    return ESCAPE_KEY_TRANSLATIONS.get(sequence)
+
+
+class SidebarApp:
+    def __init__(self, stdscr: "curses._CursesWindow") -> None:
+        self.stdscr = stdscr
+        self.event_file = os.environ.get("TMUX_WORKSPACE_SIDEBAR_EVENT_FILE", "")
+        self.expanded_sessions = set()
+        self.expanded_windows = set()
+        self.rows: List[Row] = []
+        self.display_rows: List[Row] = []
+        self.cursor = 0
+        self.scroll = 0
+        self.sessions: List[Session] = []
+        self.initialized = False
+        self.status_message = ""
+        self.last_refresh = 0.0
+        self.pending_reload = True
+        self.pending_kill: Optional[Row] = None
+        self.input_action: Optional[str] = None
+        self.input_target: Optional[Row] = None
+        self.input_label = ""
+        self.input_value = ""
+        self.filter_query = ""
+        self.show_help = False
+        self.sidebar_has_focus = False
+        self.current_session_id = ""
+        self.current_window_id = ""
+        self.current_pane_id = ""
+        self.running = True
+        self.last_event_mtime = self.event_mtime()
+        self.last_published_selected_key = ""
+        self.action_service = self.make_action_service()
+
+        signal.signal(signal.SIGUSR1, self.handle_reload_signal)
+        signal.signal(signal.SIGTERM, self.handle_exit_signal)
+        signal.signal(signal.SIGINT, self.handle_exit_signal)
+
+        curses.curs_set(0)
+        curses.use_default_colors()
+        curses.start_color()
+        curses.init_pair(1, curses.COLOR_WHITE, -1)
+        curses.init_pair(2, curses.COLOR_GREEN, -1)
+        curses.init_pair(3, curses.COLOR_YELLOW, -1)
+        curses.init_pair(4, curses.COLOR_CYAN, -1)
+        curses.init_pair(5, curses.COLOR_MAGENTA, -1)
+        curses.init_pair(6, curses.COLOR_RED, -1)
+        curses.init_pair(7, curses.COLOR_WHITE, -1)
+        curses.init_pair(8, curses.COLOR_WHITE, curses.COLOR_BLUE)
+        self.stdscr.keypad(True)
+        self.stdscr.nodelay(True)
+        self.stdscr.timeout(INPUT_POLL_TIMEOUT_MS)
+
+    def handle_reload_signal(self, *_args) -> None:
+        self.pending_reload = True
+
+    def handle_exit_signal(self, *_args) -> None:
+        self.running = False
+
+    def event_mtime(self) -> int:
+        if not self.event_file:
+            return 0
+        try:
+            return os.stat(self.event_file).st_mtime_ns
+        except FileNotFoundError:
+            return 0
+
+    def signal_refresh(self) -> None:
+        if not self.event_file:
+            return
+        try:
+            os.utime(self.event_file, None)
+            self.last_event_mtime = self.event_mtime()
+        except FileNotFoundError:
+            pass
+
+    def current_target_ids(self) -> Tuple[str, str, str]:
+        return TMUX.current_target_ids()
+
+    def make_action_service(self) -> SidebarActionService:
+        return SidebarActionService(
+            tmux_capture=tmux_capture,
+            tmux_option=tmux_option,
+            tmux_run=tmux_run,
+            tmux_run_multi=tmux_run_multi,
+            non_sidebar_pane=non_sidebar_pane,
+            clear_sidebar_focus_everywhere=clear_sidebar_focus_everywhere,
+        )
+
+    def action_handler(self) -> SidebarActionService:
+        if not hasattr(self, "action_service"):
+            self.action_service = self.make_action_service()
+        return self.action_service
+
+    def load_snapshot(self) -> None:
+        selected_key = self.shared_selected_key() or (self.display_rows[self.cursor].key if self.display_rows else None)
+        snapshot = TMUX.snapshot()
+        self.current_session_id = snapshot.current.session_id
+        self.current_window_id = snapshot.current.window_id
+        self.current_pane_id = snapshot.current.pane_id
+        self.sidebar_has_focus = self.current_pane_id == os.environ.get("TMUX_PANE", "")
+
+        pane_states = self.load_pane_states()
+        self.clear_active_terminal_state(self.current_pane_id, pane_states)
+
+        self.sessions = merge_snapshot_state(snapshot.sessions, snapshot.windows, snapshot.panes, pane_states)
+        self.reconcile_expansion_state(self.current_session_id, self.current_window_id)
+        self.ensure_selected_key_visible(selected_key)
+        self.rows = self.build_rows()
+        self.refresh_display_rows()
+        self.restore_cursor(selected_key)
+        self.last_published_selected_key = self.selected_row_key() or ""
+        self.last_refresh = time.monotonic()
+        self.pending_reload = False
+        self.last_event_mtime = self.event_mtime()
+
+    def filtered_rows(self) -> List[Row]:
+        return filter_sidebar_rows(self.rows, self.filter_query)
+
+    def refresh_display_rows(self) -> None:
+        self.display_rows = self.filtered_rows()
+
+    def matching_row_indexes(self) -> List[int]:
+        return find_matching_row_indexes(self.display_rows, self.filter_query)
+
+    def state_dir(self) -> str:
+        return str(resolve_state_dir(event_file=self.event_file))
+
+    def load_pane_states(self) -> Dict[str, dict]:
+        return load_shared_pane_states(Path(self.state_dir()))
+
+    def shared_selected_key(self) -> str:
+        return load_shared_selection_key(Path(self.state_dir()))
+
+    def selected_row_key(self) -> str:
+        row = self.selected_row()
+        return row.key if row is not None else ""
+
+    def publish_selected_key(self) -> None:
+        if not self.sidebar_has_focus:
+            return
+        selected_key = self.selected_row_key()
+        if not selected_key or selected_key == self.last_published_selected_key:
+            return
+        update_shared_selection_key(Path(self.state_dir()), selected_key=selected_key)
+        self.last_published_selected_key = selected_key
+        self.signal_refresh()
+
+    def ensure_selected_key_visible(self, selected_key: Optional[str]) -> None:
+        ensure_sidebar_selected_key_visible(
+            selected_key,
+            self.sessions,
+            self.expanded_sessions,
+            self.expanded_windows,
+        )
+
+    def clear_active_terminal_state(self, pane_id: str, pane_states: Dict[str, dict]) -> None:
+        state = pane_states.get(pane_id)
+        if not state:
+            return
+        if str(state.get("status") or "") not in {"done", "needs-input", "error"}:
+            return
+
+        path = Path(self.state_dir()) / f"pane-{pane_id}.json"
+        cleared_state = clear_actionable_state_file(path, updated_at=int(time.time()))
+        if cleared_state is None:
+            return
+        pane_states[pane_id] = cleared_state
+
+    def reconcile_expansion_state(self, current_session_id: str, current_window_id: str) -> None:
+        self.initialized = reconcile_sidebar_expansion_state(
+            self.sessions,
+            self.expanded_sessions,
+            self.expanded_windows,
+            current_session_id=current_session_id,
+            current_window_id=current_window_id,
+            initialized=self.initialized,
+        )
+
+    def build_rows(self) -> List[Row]:
+        return build_sidebar_rows(
+            self.sessions,
+            self.expanded_sessions,
+            self.expanded_windows,
+            current_session_id=self.current_session_id,
+            current_window_id=self.current_window_id,
+            current_pane_id=self.current_pane_id,
+        )
+
+    def apply_optimistic_target(
+        self,
+        *,
+        session_id: str = "",
+        window_id: str = "",
+        pane_id: str = "",
+        sidebar_has_focus: bool = False,
+        selected_key: Optional[str] = None,
+    ) -> None:
+        if session_id:
+            self.current_session_id = session_id
+        if window_id:
+            self.current_window_id = window_id
+        self.current_pane_id = pane_id
+        self.sidebar_has_focus = sidebar_has_focus
+        self.rows = self.build_rows()
+        self.refresh_display_rows()
+        self.restore_cursor(selected_key)
+
+    def preview_target(
+        self,
+        *,
+        session_id: str = "",
+        window_id: str = "",
+        pane_id: str = "",
+        sidebar_has_focus: bool = False,
+        selected_key: Optional[str] = None,
+    ) -> None:
+        self.apply_optimistic_target(
+            session_id=session_id,
+            window_id=window_id,
+            pane_id=pane_id,
+            sidebar_has_focus=sidebar_has_focus,
+            selected_key=selected_key,
+        )
+        self.draw()
+
+    def restore_cursor(self, selected_key: Optional[str]) -> None:
+        if not self.display_rows:
+            self.cursor = 0
+            self.scroll = 0
+            return
+
+        if selected_key is not None:
+            for index, row in enumerate(self.display_rows):
+                if row.key == selected_key:
+                    self.cursor = index
+                    if self.display_rows[self.cursor].kind == "spacer":
+                        self.move_cursor(1)
+                    self.ensure_cursor_visible()
+                    return
+
+        self.cursor = min(self.cursor, len(self.display_rows) - 1)
+        if self.display_rows[self.cursor].kind == "spacer":
+            self.move_cursor(-1 if self.cursor > 0 else 1)
+        self.ensure_cursor_visible()
+
+    def ensure_cursor_visible(self) -> None:
+        height, _ = self.stdscr.getmaxyx()
+        body_height = max(1, height - 2)
+        if self.cursor < self.scroll:
+            self.scroll = self.cursor
+        elif self.cursor >= self.scroll + body_height:
+            self.scroll = self.cursor - body_height + 1
+
+    def selected_row(self) -> Optional[Row]:
+        if not self.display_rows:
+            return None
+        row = self.display_rows[self.cursor]
+        if row.kind == "spacer":
+            return None
+        return row
+
+    def run(self) -> None:
+        while self.running:
+            try:
+                if self.should_reload():
+                    self.load_snapshot()
+                self.draw()
+                key = self.read_key()
+                if key != -1:
+                    self.handle_key(key)
+            except Exception as exc:
+                self.status_message = str(exc)
+                self.pending_reload = False
+                self.draw()
+                time.sleep(0.8)
+
+    def read_key(self) -> int:
+        key = self.stdscr.getch()
+        if key != 27:
+            return key
+
+        sequence = self.read_escape_sequence()
+        translated = decode_escape_sequence(sequence)
+        if translated is not None:
+            return translated
+        return key
+
+    def read_escape_sequence(self) -> str:
+        sequence = "\x1b"
+        self.stdscr.timeout(ESCAPE_SEQUENCE_TIMEOUT_MS)
+        try:
+            while True:
+                key = self.stdscr.getch()
+                if key == -1:
+                    break
+                if key < 0 or key > 255:
+                    break
+                sequence += chr(key)
+                if chr(key).isalpha() or key == ord("~"):
+                    break
+        finally:
+            self.stdscr.timeout(INPUT_POLL_TIMEOUT_MS)
+        return sequence
+
+    def should_reload(self) -> bool:
+        if self.pending_reload:
+            return True
+        if time.monotonic() - self.last_refresh > FALLBACK_REFRESH_SECONDS:
+            return True
+        return self.event_mtime() != self.last_event_mtime
+
+    def draw(self) -> None:
+        draw_sidebar(self, status_badge_fn=status_badge)
+
+    def footer_prefix(self) -> str:
+        return render_footer_prefix(self)
+
+    def footer_text(self, width: int) -> str:
+        return render_footer_text(self, width, status_badge_fn=status_badge, status_labels=STATUS_LABELS)
+
+    def status_attr(self, status: str) -> int:
+        return render_status_attr(status)
+
+    def status_column_width(self, width: int) -> int:
+        if width < 10:
+            return 0
+        if width < 24:
+            return 2
+        return 3
+
+    def ellipsize(self, text: str, width: int) -> str:
+        if width <= 0:
+            return ""
+        if len(text) <= width:
+            return text
+        if width == 1:
+            return "…"
+        return text[: max(0, width - 1)] + "…"
+
+    def fit_footer(self, text: str, width: int) -> str:
+        return self.ellipsize(text, max(0, width - 1))
+
+    def header_text(self, width: int) -> str:
+        source_rows = getattr(self, "rows", None) or self.display_rows
+        items = [row for row in source_rows if row.kind != "spacer"]
+        visible_items = [row for row in self.display_rows if row.kind != "spacer"]
+        session_count = len([row for row in items if row.kind == "session"])
+        actionable_count = len(
+            [
+                row
+                for row in items
+                if row.status in {"needs-input", "error"} or (row.status == "done" and row.unread)
+            ]
+        )
+        running_count = len([row for row in items if row.status == "running"])
+
+        parts = [f"{session_count} ws"]
+        if actionable_count:
+            parts.append(f"{actionable_count} inbox")
+        if running_count:
+            parts.append(f"{running_count} run")
+        if self.filter_query:
+            parts.append(f"/{self.filter_query}")
+        elif visible_items:
+            parts.append(f"{len(visible_items)} shown")
+
+        return self.fit_footer("  •  ".join(parts), width)
+
+    def row_priority_prefix(self, row: Row) -> str:
+        if not row.priority_text:
+            return ""
+        state = "▾ " if row.expandable and row.expanded else "▸ " if row.expandable else "  "
+        return f"{row.tree_prefix}{state}{row.priority_text}".rstrip()
+
+    def render_row_parts(self, row: Row, width: int) -> Tuple[str, str]:
+        base = row.render()
+        meta = row.meta.strip()
+        if width <= 0:
+            return "", ""
+
+        priority_prefix = self.row_priority_prefix(row)
+        if priority_prefix and base.startswith(priority_prefix):
+            detail = base[len(priority_prefix) :].strip()
+            if not detail or width <= len(priority_prefix):
+                return self.ellipsize(priority_prefix, width), ""
+            detail_width = max(1, width - len(priority_prefix) - 1)
+            return f"{priority_prefix} {self.ellipsize(detail, detail_width)}", ""
+
+        if not meta or width < 24:
+            return self.ellipsize(base, width), ""
+
+        max_meta_width = min(len(meta), max(6, width // 3))
+        if len(base) + 2 + max_meta_width > width:
+            if width < 34:
+                return self.ellipsize(base, width), ""
+            base_width = max(1, width - 2 - max_meta_width)
+            return self.ellipsize(base, base_width), self.ellipsize(meta, max_meta_width)
+
+        return base, meta
+
+    def draw_row_text(
+        self,
+        y: int,
+        x: int,
+        width: int,
+        primary_text: str,
+        meta_text: str,
+        attr: int,
+    ) -> None:
+        if width <= 0:
+            return
+        if not meta_text:
+            self.safe_addstr(y, x, primary_text, width, attr)
+            return
+
+        meta_width = len(meta_text)
+        gap = 2
+        if meta_width + gap >= width:
+            self.safe_addstr(y, x, self.ellipsize(primary_text, width), width, attr)
+            return
+
+        primary_width = max(1, width - meta_width - gap)
+        primary_attr = attr
+        meta_attr = (attr | curses.A_DIM) & ~curses.A_BOLD
+        if primary_text.startswith(("▾ ", "▸ ")):
+            meta_attr = (curses.color_pair(7) | curses.A_DIM) | (attr & curses.A_REVERSE)
+        if attr & curses.A_REVERSE:
+            meta_attr |= curses.A_REVERSE
+
+        self.safe_addstr(y, x, self.ellipsize(primary_text, primary_width), primary_width, primary_attr)
+        self.safe_addstr(y, x + primary_width, " " * gap, gap + 1, attr, pad=False)
+        self.safe_addstr(y, x + primary_width + gap, meta_text, meta_width + 1, meta_attr, pad=False)
+
+    def context_actions(self, row: Optional[Row]) -> str:
+        if row is None:
+            return ""
+        if row.kind == "session":
+            actions = ["enter switch", "space fold" if row.expandable else "", "n new", "r rename", "x kill", "C codex"]
+        elif row.kind == "window":
+            actions = ["enter open", "space panes" if row.expandable else "", "r rename", "x kill", "C codex"]
+        else:
+            actions = ["enter focus", "r title", "x kill", "C codex"]
+        actions.append("/ filter")
+        return "  ".join(action for action in actions if action)
+
+    def draw_empty_state(self, height: int, width: int) -> None:
+        if self.filter_query:
+            title = "No matches"
+            subtitle = f"/{self.filter_query}"
+        else:
+            title = "No rows"
+            subtitle = "Press n to create a session"
+
+        y = max(0, (height // 2) - 1)
+        self.safe_addstr(y, 0, self.ellipsize(title, width - 2).center(max(1, width - 1)), width, curses.A_BOLD)
+        self.safe_addstr(y + 1, 0, self.ellipsize(subtitle, width - 2).center(max(1, width - 1)), width, curses.A_DIM)
+
+    def draw_kill_overlay(self, height: int, width: int) -> None:
+        row = self.pending_kill
+        if row is None or width < 18 or height < 6:
+            return
+
+        label = self.ellipsize(row.text, max(1, width - 12))
+        lines = [
+            f"Kill {row.kind}?",
+            label,
+            "y confirm   any key cancel",
+        ]
+        inner_width = max(len(line) for line in lines)
+        box_width = min(width - 4, inner_width + 4)
+        box_height = len(lines) + 2
+        start_y = max(0, (height - box_height) // 2)
+        start_x = max(0, (width - box_width) // 2)
+
+        top = f"┌{'─' * max(0, box_width - 2)}┐"
+        bottom = f"└{'─' * max(0, box_width - 2)}┘"
+        self.safe_addstr(start_y, start_x, top, box_width + 1, curses.color_pair(6) | curses.A_BOLD, pad=False)
+        for offset, line in enumerate(lines, start=1):
+            content = f"│ {self.ellipsize(line, box_width - 4).ljust(max(0, box_width - 4))} │"
+            self.safe_addstr(
+                start_y + offset,
+                start_x,
+                content,
+                box_width + 1,
+                curses.color_pair(6) | curses.A_BOLD,
+                pad=False,
+            )
+        self.safe_addstr(
+            start_y + box_height - 1,
+            start_x,
+            bottom,
+            box_width + 1,
+            curses.color_pair(6) | curses.A_BOLD,
+            pad=False,
+        )
+
+    def row_indicator(self, row: Row, width: int, focused: bool = False) -> str:
+        return render_row_indicator(row, focused=focused)
+
+    def indicator_attr(self, row: Row, focused: bool = False) -> int:
+        return render_indicator_attr(row, status_attr_fn=self.status_attr, focused=focused)
+
+    def row_attr(self, row: Row, focused: bool = False) -> int:
+        return render_row_attr(self, row, focused=focused)
+
+    def safe_addstr(self, y: int, x: int, text: str, width: int, attr: int, pad: bool = True) -> None:
+        render_safe_addstr(self, y, x, text, width, attr, pad=pad)
+
+    def handle_key(self, key: int) -> None:
+        sidebar_handle_key(self, key, key_shift_left=KEY_SHIFT_LEFT, key_shift_right=KEY_SHIFT_RIGHT)
+
+    def handle_input_key(self, key: int) -> None:
+        sidebar_handle_input_key(self, key)
+
+    def start_input(self, action: str, label: str, initial_value: str) -> None:
+        sidebar_start_input(self, action, label, initial_value)
+
+    def start_rename(self) -> None:
+        sidebar_start_rename(self)
+
+    def submit_input(self) -> None:
+        sidebar_submit_input(self, tmux_run=tmux_run, tmux_capture=tmux_capture, non_sidebar_pane=non_sidebar_pane)
+
+    def reset_input(self) -> None:
+        sidebar_reset_input(self)
+
+    def move_cursor(self, step: int) -> None:
+        if not self.display_rows:
+            return
+        next_cursor = max(0, min(len(self.display_rows) - 1, self.cursor + step))
+        while 0 <= next_cursor < len(self.display_rows) and self.display_rows[next_cursor].kind == "spacer":
+            next_cursor += 1 if step >= 0 else -1
+        if 0 <= next_cursor < len(self.display_rows):
+            self.cursor = next_cursor
+        self.ensure_cursor_visible()
+
+    def page_move(self, step: int, full_page: bool = False) -> None:
+        height, _ = self.stdscr.getmaxyx()
+        lines = max(1, height - 2)
+        if full_page:
+            self.move_cursor(step * max(1, lines - 1))
+        else:
+            self.move_cursor(step * max(1, lines // 2))
+
+    def jump_filter_result(self, step: int) -> None:
+        matches = self.matching_row_indexes()
+        if not matches:
+            return
+        if self.cursor not in matches:
+            self.cursor = matches[0 if step >= 0 else -1]
+            self.ensure_cursor_visible()
+            return
+        current_index = matches.index(self.cursor)
+        target_index = (current_index + step) % len(matches)
+        self.cursor = matches[target_index]
+        self.ensure_cursor_visible()
+
+    def clear_filter(self) -> None:
+        if not self.filter_query:
+            return
+        self.filter_query = ""
+        self.refresh_display_rows()
+        self.restore_cursor(None)
+
+    def jump_to_kind(self, kind: str, step: int) -> None:
+        candidates = [
+            index for index, row in enumerate(self.display_rows) if row.kind == kind
+        ]
+        if not candidates:
+            return
+        if self.cursor not in candidates:
+            self.cursor = candidates[0 if step >= 0 else -1]
+            self.ensure_cursor_visible()
+            return
+        current_index = candidates.index(self.cursor)
+        target_index = (current_index + step) % len(candidates)
+        self.cursor = candidates[target_index]
+        self.ensure_cursor_visible()
+
+    def jump_to_active_row(self) -> None:
+        for index, row in enumerate(self.display_rows):
+            if row.kind != "spacer" and row.active:
+                self.cursor = index
+                self.ensure_cursor_visible()
+                return
+
+    def center_cursor(self) -> None:
+        height, _ = self.stdscr.getmaxyx()
+        body_height = max(1, height - 2)
+        max_scroll = max(0, len(self.display_rows) - body_height)
+        self.scroll = min(max_scroll, max(0, self.cursor - body_height // 2))
+
+    def window_targets(self) -> List[Tuple[str, str]]:
+        return flatten_window_targets(
+            [session.session_id for session in self.sessions],
+            [
+                (window.session_id, window.window_id, window.index)
+                for session in self.sessions
+                for window in session.windows
+            ],
+        )
+
+    def cycle_window(self, step: int) -> None:
+        self.action_handler().cycle_window(self, step)
+
+    def toggle_selected_expansion(self) -> None:
+        row = self.selected_row()
+        if row is None or not row.expandable:
+            return
+        if row.kind == "session":
+            if row.row_id in self.expanded_sessions:
+                self.expanded_sessions.remove(row.row_id)
+            else:
+                self.expanded_sessions.add(row.row_id)
+        elif row.kind == "window":
+            if row.row_id in self.expanded_windows:
+                self.expanded_windows.remove(row.row_id)
+            else:
+                self.expanded_windows.add(row.row_id)
+        self.rows = self.build_rows()
+        self.refresh_display_rows()
+        self.restore_cursor(row.key)
+
+    def collapse_selected(self) -> None:
+        row = self.selected_row()
+        if row is None:
+            return
+        if row.kind == "session" and row.row_id in self.expanded_sessions:
+            self.expanded_sessions.remove(row.row_id)
+            self.rows = self.build_rows()
+            self.refresh_display_rows()
+            self.restore_cursor(row.key)
+            return
+        if row.kind == "window" and row.row_id in self.expanded_windows:
+            self.expanded_windows.remove(row.row_id)
+            self.rows = self.build_rows()
+            self.refresh_display_rows()
+            self.restore_cursor(row.key)
+            return
+        if self.cursor > 0:
+            self.cursor -= 1
+            self.ensure_cursor_visible()
+
+    def expand_or_activate_selected(self) -> None:
+        row = self.selected_row()
+        if row is None:
+            return
+        if row.kind == "session" and row.expandable and row.row_id not in self.expanded_sessions:
+            self.expanded_sessions.add(row.row_id)
+            self.rows = self.build_rows()
+            self.refresh_display_rows()
+            self.restore_cursor(row.key)
+            return
+        if row.kind == "window" and row.expandable and row.row_id not in self.expanded_windows:
+            self.expanded_windows.add(row.row_id)
+            self.rows = self.build_rows()
+            self.refresh_display_rows()
+            self.restore_cursor(row.key)
+            return
+        self.activate_selected()
+
+    def activate_selected(self) -> None:
+        self.action_handler().activate_selected(self)
+
+    def kill_selected(self) -> None:
+        self.action_handler().kill_selected(self)
+
+    def launch_codex(self) -> None:
+        self.action_handler().launch_codex(self)
+
+    def close_sidebar(self) -> None:
+        pane_id = os.environ.get("TMUX_PANE")
+        if not pane_id:
+            self.running = False
+            return
+        try:
+            tmux_run("kill-pane", "-t", pane_id)
+        except Exception:
+            self.running = False
+        self.running = False
+
+    def session_creation_path(self) -> str:
+        row = self.selected_row()
+        if row and row.path:
+            return row.path
+        return os.path.expanduser("~")
+
+    def find_session(self, session_id: str) -> Session:
+        for session in self.sessions:
+            if session.session_id == session_id:
+                return session
+        raise RuntimeError(f"Unknown session: {session_id}")
+
+    def find_window(self, window_id: str) -> Window:
+        for session in self.sessions:
+            for window in session.windows:
+                if window.window_id == window_id:
+                    return window
+        raise RuntimeError(f"Unknown window: {window_id}")
+
+    def find_pane(self, pane_id: str) -> Pane:
+        for session in self.sessions:
+            for window in session.windows:
+                for pane in window.panes:
+                    if pane.pane_id == pane_id:
+                        return pane
+        raise RuntimeError(f"Unknown pane: {pane_id}")
+
+
+def main(stdscr: "curses._CursesWindow") -> None:
+    app = SidebarApp(stdscr)
+    app.run()
+
+
+if __name__ == "__main__":
+    curses.wrapper(main)
