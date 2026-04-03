@@ -10,6 +10,8 @@ It renders a long-lived sidebar pane instead of rebuilding a popup on every acti
 
 It is designed for setups where one tmux server contains multiple projects and multiple agent or tool panes such as Codex, Flutter, and plain shells. Non-integrated panes still appear in the tree; status integrations are currently provider-backed for Codex and Flutter.
 
+![tmux workspace sidebar screenshot](assets/tmux-workspace-sidebar-demo.svg)
+
 ## Features
 
 - Persistent sidebar pane, not a chooser popup
