@@ -1,148 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="2788" height="1346" viewBox="0 0 2788 1346" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="336" height="423" viewBox="0 0 336 423" role="img" aria-labelledby="title desc">
 <title id="title">tmux workspace sidebar screenshot</title>
-<desc id="desc">Live tmux window showing the workspace sidebar alongside editor and Codex panes.</desc>
-<rect width="100%" height="100%" fill="#0b1220" rx="18"/>
-<rect x="18" y="18" width="2752" height="1310" rx="14" fill="#111827" stroke="#243041"/>
-<text x="38" y="40" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="16">tmux-workspace-sidebar</text>
-<text x="268" y="40" fill="#8aa0b8" font-family="Menlo, Monaco, monospace" font-size="13">live capture from tmux</text>
-<rect x="18" y="52" width="256" height="1260" rx="10" fill="#111827" stroke="#60a5fa" stroke-width="2"/>
-<text x="30" y="72" fill="#8aa0b8" font-family="Menlo, Monaco, monospace" font-size="12">%1808  sidebar</text>
-<text x="30" y="90" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13">TS-Temuulen.local</text>
-<text x="30" y="114" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">4 ws  •  5 run  •  13 shown</text>
-<text x="30" y="132" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"> ▾ adventour          1w · 1p ○</text>
-<text x="30" y="150" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">     1 codex adventour        ○</text>
-<text x="30" y="168" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"> ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈</text>
-<text x="30" y="186" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">▌▾ dotfiles      4w · 4p · 4r ◒</text>
-<text x="30" y="204" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">     1 codex .config          ◒</text>
-<text x="30" y="222" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">     2 codex tmux-workspace-  ◒</text>
-<text x="30" y="240" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">     3 codex codex-orbit      ◒</text>
-<text x="30" y="258" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">▌    4 codex tmux-workspace-  ◒</text>
-<text x="30" y="276" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"> ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈</text>
-<text x="30" y="294" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"> ▾ hamuga             1w · 1p</text>
-<text x="30" y="312" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">     1 zsh hamuga-app</text>
-<text x="30" y="330" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"> ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈</text>
-<text x="30" y="348" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"> ▾ ict                3w · 4p ○</text>
-<text x="30" y="366" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">     1 bash app</text>
-<text x="30" y="384" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">   ▸ 2 nvim                   ○</text>
-<text x="30" y="402" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">     3 zsh app</text>
-<text x="30" y="420" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="438" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="456" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="474" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="492" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="510" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="528" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="546" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="564" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="582" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="600" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="618" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="636" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="654" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="672" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="690" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="708" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="726" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="744" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="762" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="780" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="798" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="816" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="834" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="852" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="870" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="888" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="906" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="924" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="942" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="960" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="978" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="996" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1014" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1032" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1050" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1068" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1086" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1104" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1122" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1140" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1158" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1176" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1194" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1212" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1230" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1248" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1266" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1284" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="30" y="1302" fill="#93c5fd" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<rect x="290" y="52" width="2480" height="1260" rx="10" fill="#0f172a" stroke="#5eead4" stroke-width="2"/>
-<text x="302" y="72" fill="#8aa0b8" font-family="Menlo, Monaco, monospace" font-size="12">%1769  active</text>
-<text x="302" y="90" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13">⠧ .config</text>
-<text x="302" y="114" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">  Code Hotspots</text>
-<text x="302" y="132" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="150" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">  - Rendering/styling: tmux_workspace_sidebar/sidebar_render.py:7</text>
-<text x="302" y="168" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">  - Row text + meta layout: bin/tmux-workspace-sidebar:481</text>
-<text x="302" y="186" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">  - Header summary: bin/tmux-workspace-sidebar:448</text>
-<text x="302" y="204" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="222" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">  If you want the fastest “next level” jump, I’d implement these three first: tree connectors, pane meta column, and a less noisy color system.</text>
-<text x="302" y="240" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="258" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="276" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">› okay fix that let&#x27;s see</text>
-<text x="302" y="294" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="312" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="330" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">• I’m patching the live defaults now. The first pass will change hierarchy and information density, not just recolor the same layout.</text>
-<text x="302" y="348" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="366" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">• Called</text>
-<text x="302" y="384" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">  └ context-mode.ctx_batch_execute({&quot;commands&quot;:[{&quot;label&quot;:&quot;Sidebar App Tests&quot;,&quot;command&quot;:&quot;cd \&quot;/Users/ict/.config/tmux/plugins/tmux-workspace-sidebar\&quot; &amp;&amp; sed -n &#x27;1,360p&#x27; tests/test_sidebar_app.py&quot;},{&quot;label&quot;:&quot;Sidebar Tree Tests&quot;,&quot;command&quot;:&quot;cd \&quot;/Users/ict/.config/tmux/plugins/tmux-workspace-sidebar\&quot; &amp;&amp; sed -n</text>
-<text x="302" y="402" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">        &#x27;1,320p&#x27; tests/test_sidebar_tree.py&quot;}],&quot;queries&quot;:[&quot;Which tests cover header text, row rendering, meta columns, and indicators?&quot;,&quot;Which tests will need updates if tree prefixes or pane meta are changed?&quot;,&quot;Are there existing tests around row.render, session/window/pane labels, or</text>
-<text x="302" y="420" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">        summarize_counts?&quot;],&quot;timeout&quot;:60000})</text>
-<text x="302" y="438" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">    Executed 2 commands (633 lines, 22.7KB). Indexed 7 sections. Searched 3 queries.</text>
-<text x="302" y="456" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="474" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">    ## Indexed Sections</text>
-<text x="302" y="492" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="510" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">    - Sidebar App Tests (1) (3.7KB)</text>
-<text x="302" y="528" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">    - Sidebar App Tests (2) (4.0KB)</text>
-<text x="302" y="546" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">    - Sidebar App Tests (3) (3.7KB)</text>
-<text x="302" y="564" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">    - Sidebar App Tests (4) (1.7KB)</text>
-<text x="302" y="582" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">    - Sidebar Tree Tests (1) (3.5KB)</text>
-<text x="302" y="600" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">    - Sidebar Tree Tests (2) (3.3KB)</text>
-<text x="302" y="618" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">    - Sidebar Tree Tests (3) (2.7KB)</text>
-<text x="302" y="636" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="654" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">    ## Which tests cover header text, row rendering, meta columns, and indicators?</text>
-<text x="302" y="672" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="690" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">    ### Sidebar App Tests (2)</text>
-<text x="302" y="708" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">    def test_shift_up_and_down_fall_back_to_vertical_navigation(self) -&gt; None:</text>
-<text x="302" y="726" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">            self.assertEqual(sidebar.decode_escape_sequence(&quot;\x1b[1;2A&quot;), sidebar.curses.KEY_UP)</text>
-<text x="302" y="744" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">            self.assertEqual(sidebar.decode_escape_sequence(&quot;\x1b[1;2B&quot;), sidebar.curses.KEY_DOWN)</text>
-<text x="302" y="762" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="780" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">    class SidebarStatusRenderingTests(unittest.TestCase):</text>
-<text x="302" y="798" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">        def make_footer_app(self, row: sidebar.Row) -&gt; sidebar.SidebarApp:</text>
-<text x="302" y="816" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">            app = sidebar.SidebarApp.__new__(sidebar.SidebarApp)</text>
-<text x="302" y="834" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">            app.input_action = None</text>
-<text x="302" y="852" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">            app.pending_kill = None</text>
-<text x="302" y="870" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">            app.status_message = &quot;&quot;</text>
-<text x="302" y="888" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">            app.show_help = False</text>
-<text x="302" y="906" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">            app.filter_query = &quot;&quot;</text>
-<text x="302" y="924" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">            app.fit_footer = lambda text, _width: text</text>
-<text x="302" y="942" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">            app.selected_row = lambda: row</text>
-<text x="302" y="960" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">            app.context_actions = lambda _row: &quot;&quot;</text>
-<text x="302" y="978" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">            app.display_rows = [row]</text>
-<text x="302" y="996" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">            return app</text>
-<text x="302" y="1014" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="1032" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">        def test_header_text_summarizes_workspaces_and_inbox(self) -&gt; None:</text>
-<text x="302" y="1050" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">            session = make_row(kind=&quot;session&quot;, row_id=&quot;$1&quot;, session_id=&quot;$1&quot;)</text>
-<text x="302" y="1068" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">            actionable = make_row(</text>
-<text x="302" y="1086" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">                kind=&quot;pane&quot;,</text>
-<text x="302" y="1104" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">                row_id=&quot;%1&quot;,</text>
-<text x="302" y="1122" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">                depth=2,</text>
-<text x="302" y="1140" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">                text=&quot;codex&quot;,</text>
-<text x="302" y="1158" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">                tree_...</text>
-<text x="302" y="1176" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="1194" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">─ Worked for 2m 05s ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</text>
-<text x="302" y="1212" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="1230" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">• I’m editing the tree model and renderer together so the new look is structural: connectors, cleaner labels, pane meta, tighter spacing, and a stronger header bar.</text>
-<text x="302" y="1248" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="1266" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve">• Working (2m 19s • esc to interrupt)</text>
-<text x="302" y="1284" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
-<text x="302" y="1302" fill="#d7e3f4" font-family="Menlo, Monaco, monospace" font-size="13" xml:space="preserve"></text>
+<desc id="desc">Sidebar-only screenshot showing sessions, windows, panes, and status badges.</desc>
+<defs>
+<linearGradient id="bg" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#181513"/>
+<stop offset="100%" stop-color="#12100f"/>
+</linearGradient>
+</defs>
+<rect width="336" height="423" rx="16" fill="url(#bg)"/>
+<rect x="1" y="1" width="334" height="421" rx="15" fill="none" stroke="#2a2623"/>
+<rect x="0" y="0" width="336" height="31" fill="#0f0f0f"/>
+<text x="10" y="20" fill="#d8cc93" font-family="Menlo, Monaco, monospace" font-size="12">WS 4  RUN 3  SHOW 15</text>
+<rect x="0" y="31" width="312" height="32" fill="#d0c389"/>
+<rect x="312" y="31" width="24" height="32" fill="#2f2923"/>
+<text x="16" y="52" fill="#2b261d" font-family="Menlo, Monaco, monospace" font-size="13" font-weight="700">▼ adventour</text>
+<text x="226" y="52" fill="#6c6449" font-family="Menlo, Monaco, monospace" font-size="12">1w · 1p</text>
+<text x="18" y="80" fill="#c7bb8c" font-family="Menlo, Monaco, monospace" font-size="12">│  1 codex adventour           @advento…  ○</text>
+<line x1="16" y1="96" x2="320" y2="96" stroke="#57504a" stroke-dasharray="1 2"/>
+<rect x="0" y="98" width="3" height="56" fill="#c9f4ee"/>
+<text x="16" y="116" fill="#bfb38b" font-family="Menlo, Monaco, monospace" font-size="13" font-weight="700">▼ dotfiles</text>
+<text x="205" y="116" fill="#807561" font-family="Menlo, Monaco, monospace" font-size="12">6w · 6p · 2r</text>
+<text x="18" y="142" fill="#d8cfac" font-family="Menlo, Monaco, monospace" font-size="12">│  1 codex .config             @.config  ○</text>
+<text x="18" y="162" fill="#d8cfac" font-family="Menlo, Monaco, monospace" font-size="12">│  2 codex tmux-workspace…     @tmux-wo… ○</text>
+<text x="18" y="182" fill="#d8cfac" font-family="Menlo, Monaco, monospace" font-size="12">│  3 codex codex               @codex-o… ○</text>
+<text x="18" y="202" fill="#d8cfac" font-family="Menlo, Monaco, monospace" font-size="12">│  4 codex tmux-…              @tmux-wo… ○</text>
+<text x="18" y="222" fill="#d8cfac" font-family="Menlo, Monaco, monospace" font-size="12">│  5 codex tmux-…              @tmux-wo… ◐</text>
+<text x="18" y="242" fill="#d8cfac" font-family="Menlo, Monaco, monospace" font-size="12">│  6 zsh ~                               </text>
+<line x1="16" y1="258" x2="320" y2="258" stroke="#57504a" stroke-dasharray="1 2"/>
+<text x="16" y="280" fill="#bfb38b" font-family="Menlo, Monaco, monospace" font-size="13" font-weight="700">▼ hamuga</text>
+<text x="226" y="280" fill="#807561" font-family="Menlo, Monaco, monospace" font-size="12">1w · 1p</text>
+<text x="18" y="306" fill="#d8cfac" font-family="Menlo, Monaco, monospace" font-size="12">│  1 zsh hamuga-…              @hamuga-…</text>
+<line x1="16" y1="322" x2="320" y2="322" stroke="#57504a" stroke-dasharray="1 2"/>
+<text x="16" y="344" fill="#bfb38b" font-family="Menlo, Monaco, monospace" font-size="13" font-weight="700">▼ ict</text>
+<text x="240" y="344" fill="#807561" font-family="Menlo, Monaco, monospace" font-size="12">3w · 3p</text>
+<text x="18" y="370" fill="#d8cfac" font-family="Menlo, Monaco, monospace" font-size="12">│  1 bash app                  @app</text>
+<text x="18" y="390" fill="#d8cfac" font-family="Menlo, Monaco, monospace" font-size="12">│  2 nvim                      @app</text>
+<text x="18" y="410" fill="#d8cfac" font-family="Menlo, Monaco, monospace" font-size="12">│  3 zsh app                   @app</text>
 </svg>
